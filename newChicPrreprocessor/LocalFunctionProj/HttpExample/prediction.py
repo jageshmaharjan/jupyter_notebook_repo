@@ -3,8 +3,9 @@ import requests
 import numpy as np
 from . import tokenization
 import argparse
-import urllib.request
 import os
+import urllib.request
+import pathlib
 
 def get_query(query):
   return query + "now new query"
@@ -13,12 +14,10 @@ def get_query(query):
 def predict(query):
     query = query #request.args.get('text')
 
-    endpoints = "http://18.162.113.148:8501/v1/models/newchicclassifier:predict"
+    endpoints = "http://18.1xx.1xx.xxx:8501/v1/models/newchicclassifier:predict"
     headers = {"content-type": "application-json"}
 
-    path = os.getcwd()
-    path = str(path)
-    filepath = os.path.join(path,'classify/vocab.txt')
+    filepath = pathlib.Path(__file__).parent / 'vocab.txt'
 
     tokenizer = tokenization.FullTokenizer(vocab_file=filepath, do_lower_case=True)
 
@@ -51,9 +50,10 @@ def predict(query):
 
     data = json.dumps({"signature_name": "serving_default", "instances": instances})
 
-    response = requests.post(endpoints, data=data, headers=headers)
+    response = requests.post(endpoints, data=data, headers=headers, verify=False)
     prediction = json.loads(response.text)['predictions']
     idx_res = np.argmax(prediction)
+
 
     with urllib.request.urlopen("https://fashion-demo-assets.s3-ap-southeast-1.amazonaws.com/catDict.txt") as f:
       data = f.readlines()
